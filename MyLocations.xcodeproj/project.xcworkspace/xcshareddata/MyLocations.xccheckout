@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>1DA7E047-B20A-48CD-AD25-BE8CA506B797</string>
+	<key>IDESourceControlProjectName</key>
+	<string>MyLocations</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>E7EB82F1B068CFF7C87DBBB20CEF738AB5549D7C</key>
+		<string>https://github.com/XHaller/GetLocation.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>MyLocations.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>E7EB82F1B068CFF7C87DBBB20CEF738AB5549D7C</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/XHaller/GetLocation.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>E7EB82F1B068CFF7C87DBBB20CEF738AB5549D7C</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>E7EB82F1B068CFF7C87DBBB20CEF738AB5549D7C</string>
+			<key>IDESourceControlWCCName</key>
+			<string>GetLocation</string>
+		</dict>
+	</array>
+</dict>
+</plist>

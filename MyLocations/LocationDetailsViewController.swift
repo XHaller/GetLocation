@@ -40,6 +40,9 @@ class LocationDetailsViewController: UITableViewController {
             }
         }
     }
+    var image: UIImage?
+    var observer: AnyObject!
+    
     //outlet properties
     @IBOutlet weak var descriptionTextView:UITextView!
     @IBOutlet weak var categoryLabel: UILabel!
@@ -47,8 +50,10 @@ class LocationDetailsViewController: UITableViewController {
     @IBOutlet weak var longitudeLabel: UILabel!
     @IBOutlet weak var addressLabel: UILabel!
     @IBOutlet weak var dateLabel: UILabel!
-    //two action methods that both dismiss the screen
+    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var addPhotoLabel: UILabel!
     
+    //two action methods that both dismiss the screen
     @IBAction func done(){
         //Creates a HudView object and adds it to the navigation controller's view
         let hudView = HudView.hudInView(navigationController!.view, animated: true)
@@ -60,6 +65,7 @@ class LocationDetailsViewController: UITableViewController {
         } else {
             hudView.text = "Tagged"
             location = NSEntityDescription.insertNewObjectForEntityForName("Location", inManagedObjectContext: managedObjectContext) as Location
+            location.photoID = nil
         }
         //ask the NSEntityDescription class to insert a new object for your entity into the managed object context.
         location.locationDescription = descriptionText
@@ -69,6 +75,19 @@ class LocationDetailsViewController: UITableViewController {
         location.longitude = coordinate.longitude
         location.date = date
         location.placemark = placemark
+        if let image = image {
+            //get a new ID and assign it to the Location’s photoID property
+            if !location.hasPhoto {
+                location.photoID = Location.nextPhotoID()
+            }
+            //converts the UIImage into the JPEG format and returns an NSData object.
+            let data = UIImageJPEGRepresentation(image, 0.5)
+            //save the NSData object to the path given by the photoPath property
+            var error: NSError?
+            if !data.writeToFile(location.photoPath, options: .DataWritingAtomic, error: &error) {
+                println("Error writing file: \(error)")
+            }
+        }
         //save the context
         var error: NSError?
         if !managedObjectContext.save(&error){
@@ -110,6 +129,7 @@ class LocationDetailsViewController: UITableViewController {
         //用UITapGestureRecognizer实现点击textView意外其他地方隐藏键盘
         gestureRecognizer.cancelsTouchesInView = false
         tableView.addGestureRecognizer(gestureRecognizer)
+        listenForBackgroundNotification()
     }
     
     func hideKeyboard(gestureReconizer:UIGestureRecognizer){
@@ -141,12 +161,14 @@ class LocationDetailsViewController: UITableViewController {
         //对table view中的cell设置高度
         if indexPath.section == 0 && indexPath.row == 0 {
             return 88
-        }else if indexPath.section == 2 && indexPath.row == 2 {
+        } else if indexPath.section == 1 {
+            return imageView.hidden ? 44: 280
+        } else if indexPath.section == 2 && indexPath.row == 2 {
             addressLabel.frame.size = CGSize(width: view.bounds.size.width - 115, height: 10000)
             addressLabel.sizeToFit()//自适应
             addressLabel.frame.origin.x = view.bounds.size.width - addressLabel.frame.size.width - 15
             return addressLabel.frame.size.height + 20
-        }else{
+        } else {
             return 44
         }
     }
@@ -164,6 +186,10 @@ class LocationDetailsViewController: UITableViewController {
         if indexPath.section == 0 && indexPath.row == 0 {
             //点击文本栏即响应
             descriptionTextView.becomeFirstResponder()
+        } else if indexPath.section == 1 && indexPath.row == 0 {
+            //点击Add Photo
+            tableView.deselectRowAtIndexPath(indexPath, animated: true)
+            pickPhoto()
         }
     }
     
@@ -187,6 +213,30 @@ class LocationDetailsViewController: UITableViewController {
         super.viewWillLayoutSubviews()
         descriptionTextView.frame.size.width = view.frame.size.width - 30
     }
+    
+    func showImage(image: UIImage) {
+        imageView.image = image
+        imageView.hidden = false
+        imageView.frame = CGRect(x: 10, y: 10, width: 260, height: 260)
+        addPhotoLabel.hidden = true
+    }
+    
+    func listenForBackgroundNotification(){
+        observer = NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidEnterBackgroundNotification, object: nil, queue: NSOperationQueue.mainQueue()) { [weak self] notification in
+            if let strongSelf = self {
+                if strongSelf.presentedViewController != nil {
+                    //取消modal view controller
+                    strongSelf.dismissViewControllerAnimated(false, completion: nil)
+                }
+            strongSelf.descriptionTextView.resignFirstResponder()
+            }
+        }
+    }
+    deinit {
+        println("*** deinit \(self)")
+        NSNotificationCenter.defaultCenter().removeObserver(observer)
+    }
+    
 }
 
 extension LocationDetailsViewController: UITextViewDelegate {
@@ -201,5 +251,56 @@ extension LocationDetailsViewController: UITextViewDelegate {
         descriptionText = textView.text
     }
 }
+
+extension LocationDetailsViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func takePhotoWithCamera() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .Camera
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        presentViewController(imagePicker, animated: true, completion: nil)
+    }
+    
+    func choosePhotoFromLibrary() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .PhotoLibrary
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        presentViewController(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
+        image = info[UIImagePickerControllerEditedImage] as UIImage?
+                if let image = image {
+                    showImage(image)
+                }
+        tableView.reloadData()  //刷新tableView
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func pickPhoto() {
+        if UIImagePickerController.isSourceTypeAvailable(.Camera) {
+            showPhotoMenu()
+        } else {
+            choosePhotoFromLibrary()
+        }
+    }
+    
+    func showPhotoMenu() {
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .ActionSheet)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        let takePhotoAction = UIAlertAction(title: "Take Photo", style: .Default, handler: { _ in self.takePhotoWithCamera() })
+        alertController.addAction(takePhotoAction)
+        let chooseFromLibraryAction = UIAlertAction(title: "Choose From Library", style: .Default, handler: { _ in self.choosePhotoFromLibrary() })
+        alertController.addAction(chooseFromLibraryAction)
+        presentViewController(alertController, animated: true, completion: nil)
+    }
+}
+
 
 
