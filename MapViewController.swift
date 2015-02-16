@@ -120,6 +120,7 @@ extension MapViewController: MKMapViewDelegate {
             if annotationView == nil {
                 annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
                 //sets some properties.
+                annotationView.tintColor = UIColor(white: 0.0, alpha: 0.5)
                 annotationView.enabled = true
                 annotationView.canShowCallout = true
                 annotationView.animatesDrop = false

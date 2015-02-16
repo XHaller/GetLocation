@@ -136,6 +136,15 @@ class LocationDetailsViewController: UITableViewController {
         gestureRecognizer.cancelsTouchesInView = false
         tableView.addGestureRecognizer(gestureRecognizer)
         listenForBackgroundNotification()
+        tableView.backgroundColor = UIColor.blackColor()
+        tableView.separatorColor = UIColor(white: 1.0, alpha: 0.2)
+        tableView.indicatorStyle = .White
+        descriptionTextView.textColor = UIColor.whiteColor()
+        descriptionTextView.backgroundColor = UIColor.blackColor()
+        addPhotoLabel.textColor = UIColor.whiteColor()
+        addPhotoLabel.highlightedTextColor = addPhotoLabel.textColor
+        addressLabel.textColor = UIColor(white: 1.0, alpha: 0.4)
+        addressLabel.highlightedTextColor = addressLabel.textColor
     }
     
     func hideKeyboard(gestureReconizer:UIGestureRecognizer){
@@ -151,10 +160,43 @@ class LocationDetailsViewController: UITableViewController {
     
     func stringFromPlacemark(placemark: CLPlacemark)->String {
         //返回地址字符串的函数
-        return "\(placemark.subThoroughfare) \(placemark.thoroughfare)," +
-        "\(placemark.locality)," +
-        "\(placemark.administrativeArea) \(placemark.postalCode)," +
-        "\(placemark.country)"
+        var line = ""
+        //如果有subThoroughfare，则加入line
+        if placemark.subThoroughfare != nil {
+            line += placemark.subThoroughfare
+        }
+        //如果line不为空在thoroughfare之前加入空格
+        if placemark.thoroughfare != nil {
+            if !line.isEmpty {
+                line += " "
+            }
+            line += placemark.thoroughfare + ","
+        }
+        if placemark.locality != nil {
+            if !line.isEmpty {
+                line += " "
+            }
+            line += placemark.locality + ","
+        }
+        if placemark.administrativeArea != nil {
+            if !line.isEmpty {
+                line += " "
+            }
+            line += placemark.administrativeArea
+        }
+        if placemark.postalCode != nil {
+            if !line.isEmpty {
+                line += " "
+            }
+            line += placemark.postalCode + ","
+        }
+        if placemark.country != nil {
+            if !line.isEmpty {
+                line += " "
+            }
+            line += placemark.country
+        }
+        return line
     }
     
     func formatDate(date: NSDate)->String{
@@ -196,6 +238,26 @@ class LocationDetailsViewController: UITableViewController {
             //点击Add Photo
             tableView.deselectRowAtIndexPath(indexPath, animated: true)
             pickPhoto()
+        }
+    }
+    
+    override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+        cell.backgroundColor = UIColor.blackColor()
+        if let textLabel = cell.textLabel {
+            textLabel.textColor = UIColor.whiteColor()
+            textLabel.highlightedTextColor = textLabel.textColor
+        }
+        if let detailLabel = cell.detailTextLabel {
+            detailLabel.textColor = UIColor(white: 1.0, alpha: 0.4)
+            detailLabel.highlightedTextColor = detailLabel.textColor
+        }
+        let selectionView = UIView(frame: CGRect.zeroRect)
+        selectionView.backgroundColor = UIColor(white: 1.0, alpha: 0.2)
+        cell.selectedBackgroundView = selectionView
+        if indexPath.row == 2 {
+            let addressLabel = cell.viewWithTag(100) as UILabel
+            addressLabel.textColor = UIColor.whiteColor()
+            addressLabel.highlightedTextColor = addressLabel.textColor
         }
     }
     
@@ -260,7 +322,8 @@ extension LocationDetailsViewController: UITextViewDelegate {
 
 extension LocationDetailsViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func takePhotoWithCamera() {
-        let imagePicker = UIImagePickerController()
+        let imagePicker = MyImagePickerController()
+        imagePicker.view.tintColor = view.tintColor
         imagePicker.sourceType = .Camera
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
@@ -268,7 +331,8 @@ extension LocationDetailsViewController: UIImagePickerControllerDelegate, UINavi
     }
     
     func choosePhotoFromLibrary() {
-        let imagePicker = UIImagePickerController()
+        let imagePicker = MyImagePickerController()
+        imagePicker.view.tintColor = view.tintColor
         imagePicker.sourceType = .PhotoLibrary
         imagePicker.delegate = self
         imagePicker.allowsEditing = true

@@ -175,9 +175,38 @@ class CurrentLocationViewController: UIViewController,
     
     func stringFromPlacemark(placemark: CLPlacemark)->String{
         //将地址变成字符串以显示
-        return "\(placemark.subThoroughfare) \(placemark.thoroughfare)\n" +
-        "\(placemark.locality) \(placemark.administrativeArea) " +
-        "\(placemark.postalCode)"
+        //line1即文本第一行
+        var line1 = ""
+        //如果有subThoroughfare，则加入第一行
+        if placemark.subThoroughfare != nil {
+            line1 += placemark.subThoroughfare
+        }
+        //如果line1不为空在thoroughfare之前加入空格
+        if placemark.thoroughfare != nil {
+            if !line1.isEmpty {
+                line1 += " "
+            }
+            line1 += placemark.thoroughfare
+        }
+        //文本第二行
+        var line2 = ""
+        if placemark.locality != nil {
+            line2 += placemark.locality
+        }
+        if placemark.administrativeArea != nil {
+            if !line2.isEmpty {
+                line2 += " "
+            }
+            line2 += placemark.administrativeArea
+        }
+        if placemark.postalCode != nil {
+            if !line2.isEmpty {
+                line2 += " "
+            }
+            line2 += placemark.postalCode
+        }
+        
+        return line1 + "\n" + line2
     }
     
     func didTimeOut(){
