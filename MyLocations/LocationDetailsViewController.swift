@@ -111,6 +111,12 @@ class LocationDetailsViewController: UITableViewController {
         //给每个标签赋值
         if let location = locationToEdit {
             title = "Edit Location"
+            if location.hasPhoto {
+                //在编辑页面显示图片
+                if let image = location.photoImage {
+                    showImage(image)
+                }
+            }
         }
         descriptionTextView.text = ""
         categoryLabel.text = ""
